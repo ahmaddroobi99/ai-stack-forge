@@ -1,0 +1,11 @@
+.env
+.env.local
+data/
+*.gguf
+*.safetensors
+*.ckpt
+*.pt
+*.bin
+.venv/
+__pycache__/
+.DS_Store

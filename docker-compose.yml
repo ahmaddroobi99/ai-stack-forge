@@ -1,0 +1,60 @@
+# Skeleton only. Images are pinned in later PRs after each lane owner picks a tag.
+# Usage:
+#   cp .env.example .env
+#   docker compose --profile core config
+
+name: ai-stack-forge
+
+services:
+  gateway:
+    profiles: ["core"]
+    image: python:3.12-slim
+    command: ["python", "-c", "print('gateway placeholder'); import time; time.sleep(3600)"]
+    working_dir: /app
+    env_file: .env
+    ports:
+      - "${FORGE_PORT:-8080}:8080"
+    networks: [forge]
+
+  ollama:
+    profiles: ["core"]
+    image: ollama/ollama:latest
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ollama:/root/.ollama
+    networks: [forge]
+
+  open-webui:
+    profiles: ["core"]
+    image: ghcr.io/open-webui/open-webui:main
+    ports:
+      - "${OPENWEBUI_PORT:-3000}:8080"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - open-webui:/app/backend/data
+    depends_on:
+      - ollama
+    networks: [forge]
+
+  n8n:
+    profiles: ["core"]
+    image: n8nio/n8n:latest
+    ports:
+      - "${N8N_PORT:-5678}:5678"
+    volumes:
+      - n8n:/home/node/.n8n
+    networks: [forge]
+
+  # RAGFlow, vLLM, OpenClaw, SD WebUI, Langflow, Dify, Flowise
+  # are intentionally omitted until a lane owner pins versions.
+
+volumes:
+  ollama:
+  open-webui:
+  n8n:
+
+networks:
+  forge:
+    driver: bridge
